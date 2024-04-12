@@ -1,0 +1,33 @@
+name: Pipeline
+
+on:
+  pull_request:
+    paths:
+      - "**.yaml"
+      - "**.py"
+      - "**.in"
+      - "**.toml"
+      - "**.cfg"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: fds-runner-set
+
+    steps:
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install pytest
+        run: python -m pip install pytest
+
+      - name: Run pytest
+        run: pytest -v
